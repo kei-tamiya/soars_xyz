@@ -57,7 +57,6 @@ public class Connect {
     }
 
     public int insertLeaderSpot(Spot leaderSpot) {
-        System.out.println("leaderSpot : " + leaderSpot);
         try {
             Class.forName(driver);
             // データベースとの接続
@@ -65,7 +64,6 @@ public class Connect {
             Statement stmt = con.createStatement();
 
             String leaderSpotName = leaderSpot.getName();
-            System.out.println("leaderSpotName : " + leaderSpotName);
 
             String sql = "INSERT INTO leaderspots (name)"
                 + "SELECT ('" + leaderSpotName
@@ -178,7 +176,7 @@ public class Connect {
         }
     }
 
-    public Boolean updateStageName(Spot serverSpot) {
+    public void updateStageName(Spot serverSpot) {
         try {
             Class.forName(driver);
             // データベースとの接続
@@ -187,22 +185,86 @@ public class Connect {
             String nextStageName = serverSpot.getKeyword("NextStageName");
             String clientName = serverSpot.getKeyword("ClientName");
 
-            String sql = "UPDATE clients SET stage_name = '" + nextStageName + "' WHERE client_name = '" + clientName + "';";
-            stmt.executeUpdate(sql);
-
-            sql = "SELECT stage_name FROM clients WHERE client_name = 'latestClient';";
-            ResultSet rs = stmt.executeQuery(sql);
-
-            if (rs.next()) {
-//                leaderspotsId = rs.getInt(1);
-                System.out.println(rs.getString("stage_name"));
+            if (clientName.equals("client1")) {
+                String sql = "UPDATE clients SET stage_name = '" + nextStageName + "', waiting = true WHERE client_name = 'latestClient' or client_name = '" + clientName + "';";
+                stmt.executeUpdate(sql);
+            } else {
+                String sql = "UPDATE clients SET stage_name = '" + nextStageName + "', waiting = true WHERE client_name = '" + clientName + "';";
+                stmt.executeUpdate(sql);
+//
+//                sql = "SELECT stage_name FROM clients WHERE client_name = 'latestClient';";
+//                ResultSet rs = stmt.executeQuery(sql);
+//
+//                if (rs.next()) {
+//                    String latestStageName = rs.getString(1);
+//                }
             }
 
             stmt.close();
             con.close();
 
-            return true;
 //            return shouldNextStage(nextStageName, stmt);
+        } catch (SQLException e) {
+            System.err.println("SQL failed.");
+            e.printStackTrace();
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+//    public Boolean shouldNextStage(Spot serverSpot) {
+//        String nextStageName = serverSpot.getKeyword("NextStageName");
+//
+//        return true;
+//    }
+
+    public Boolean shouldNextStage(String nextStageName) {
+
+        return true;
+    }
+
+    public Boolean shouldNextStage(Spot serverSpot) {
+        try {
+            Class.forName(driver);
+            // データベースとの接続
+            Connection con = DriverManager.getConnection(url, user, password);
+            Statement stmt = con.createStatement();
+
+            String nextStageName = serverSpot.getKeyword("NextStageName");
+            String clientName = serverSpot.getKeyword("ClientName");
+
+            if (clientName.equals("client1")) {
+                while (true) {
+                    String sql = "SELECT waiting FROM clients";
+                    ResultSet rs = stmt.executeQuery(sql);
+                    Boolean flag = true;
+
+                    while (rs.next()) {
+                        if (!rs.getString(1).equals("t")) {
+                            wait(2000); // wait 2 second if all clients haven't finished the same stage
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if (flag)
+                        return true;
+                }
+            } else {
+                while (true) {
+                    String sql = "SELECT waiting FROM clients WHERE client_name = '" + clientName + "';";
+                    ResultSet rs = stmt.executeQuery(sql);
+
+                    if (rs.next()) {
+                        if (!rs.getString(1).equals("t"))
+                            return true;
+
+                        wait(2000); // wait 2 second if all clients haven't finished the same stage
+                    }
+                }
+            }
+//
+//            System.out.println("Problem happened when sync.");
+//            return false;
         } catch (SQLException e) {
             System.err.println("SQL failed.");
             e.printStackTrace();
@@ -210,36 +272,37 @@ public class Connect {
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
             return false;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
-    public Boolean shouldNextStage(Spot serverSpot) {
-        String nextStageName = serverSpot.getKeyword("NextStageName");
-
-        return true;
-    }
-
-    public Boolean shouldNextStage(String nextStageName) {
-
-        return true;
-    }
-
-    public Boolean shouldNextStage(String nextStageName, Statement stmt) {
+    public void progressNextStage(Spot serverSpot) {
         try {
-            String sql = "SELECT stage_name FROM clients WHERE client_name = 'latestClient';";
-            ResultSet rs = stmt.executeQuery(sql);
+            Class.forName(driver);
+            // データベースとの接続
+            Connection con = DriverManager.getConnection(url, user, password);
+            Statement stmt = con.createStatement();
 
-            if (rs.next()) {
-//                leaderspotsId = rs.getInt(1);
-                System.out.println(rs.getString("stage_name"));
+            String nextStageName = serverSpot.getKeyword("NextStageName");
+            String clientName = serverSpot.getKeyword("ClientName");
+
+            if (clientName.equals("client1")) {
+                String sql = "UPDATE waiting FROM clients";
+                ResultSet rs = stmt.executeQuery(sql);
+
+                while (rs.next()) {
+                    if (!rs.getString(1).equals("t")) {
+
+                    }
+                }
             }
-
-//            if (nextStageName == )
-            return true;
         } catch (SQLException e) {
             System.err.println("SQL failed.");
             e.printStackTrace();
-            return false;
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
         }
     }
 }
