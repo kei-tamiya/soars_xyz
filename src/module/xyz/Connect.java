@@ -14,7 +14,7 @@ public class Connect {
     public String user;
     public String password;
 
-    public Connect(Spot spot) {
+    public Connect() {
         // JDBCドライバの登録
         driver = "org.postgresql.Driver";
         // データベースの指定
@@ -34,7 +34,7 @@ public class Connect {
             Statement stmt = con.createStatement();
             String sql = "drop schema public cascade; create schema public;"
                     + "CREATE TABLE leaderspots (id serial, name varchar(200));"
-                    + "CREATE TABLE pcs (id serial, pc_name varchar(200), stage_name varchar(200), waiting boolean);"
+                    + "CREATE TABLE clients (id serial, client_name varchar(200), stage_name varchar(200), waiting boolean);"
                     + "CREATE TABLE spots (id serial, leaderspot_id integer, name varchar(200), x int, y int, z int, celltype varchar(200));"
                     + "CREATE TABLE agents (id serial, name varchar(200));";
 //            ResultSet rs = stmt.executeQuery(sql);
@@ -95,38 +95,38 @@ public class Connect {
         }
     }
 
-    // argument needs serverSpot and return pcId
+    // argument needs serverSpot and return clientId
     public int insertClient(Spot serverSpot) {
         try {
             Class.forName(driver);
             // データベースとの接続
             Connection con = DriverManager.getConnection(url, user, password);
             Statement stmt = con.createStatement();
-            String sql = "select count(*) from pcs";
+            String sql = "select count(*) from clients";
             ResultSet rs = stmt.executeQuery(sql);
 
-            int pcId = 0;
+            int clientId = 0;
             if (rs.next()) {
-                pcId = rs.getInt(1) + 1;
+                clientId = rs.getInt(1) + 1;
             }
             rs.close();
 
-            String NextStageName = serverSpot.getKeyword("NextStageName");
+            String nextStageName = serverSpot.getKeyword("NextStageName");
 
-            if (pcId == 1) {
-                sql = "insert into pcs (pc_name, stage_name, waiting) values ('pc" + pcId + "', '" + NextStageName + "', True);";
+            if (clientId == 1) {
+                sql = "insert into clients (client_name, stage_name, waiting) values ('latestClient', '" + nextStageName + "', True);";
                 stmt.executeUpdate(sql);
-
-                pcId++;
             }
 
-            sql = "insert into pcs (pc_name, stage_name, waiting) values ('pc" + pcId + "', '" + NextStageName + "', True);";
+            String clientName = "client" + clientId;
+            sql = "insert into clients (client_name, stage_name, waiting) values ('" + clientName + "', '" + nextStageName + "', True);";
             stmt.executeUpdate(sql);
+            serverSpot.setKeyword("ClientName", clientName);
 
             // データベースのクローズ
             stmt.close();
             con.close();
-            return pcId;
+            return clientId;
         } catch (SQLException e) {
             System.err.println("SQL failed.");
             e.printStackTrace();
@@ -178,4 +178,68 @@ public class Connect {
         }
     }
 
+    public Boolean updateStageName(Spot serverSpot) {
+        try {
+            Class.forName(driver);
+            // データベースとの接続
+            Connection con = DriverManager.getConnection(url, user, password);
+            Statement stmt = con.createStatement();
+            String nextStageName = serverSpot.getKeyword("NextStageName");
+            String clientName = serverSpot.getKeyword("ClientName");
+
+            String sql = "UPDATE clients SET stage_name = '" + nextStageName + "' WHERE client_name = '" + clientName + "';";
+            stmt.executeUpdate(sql);
+
+            sql = "SELECT stage_name FROM clients WHERE client_name = 'latestClient';";
+            ResultSet rs = stmt.executeQuery(sql);
+
+            if (rs.next()) {
+//                leaderspotsId = rs.getInt(1);
+                System.out.println(rs.getString("stage_name"));
+            }
+
+            stmt.close();
+            con.close();
+
+            return true;
+//            return shouldNextStage(nextStageName, stmt);
+        } catch (SQLException e) {
+            System.err.println("SQL failed.");
+            e.printStackTrace();
+            return false;
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public Boolean shouldNextStage(Spot serverSpot) {
+        String nextStageName = serverSpot.getKeyword("NextStageName");
+
+        return true;
+    }
+
+    public Boolean shouldNextStage(String nextStageName) {
+
+        return true;
+    }
+
+    public Boolean shouldNextStage(String nextStageName, Statement stmt) {
+        try {
+            String sql = "SELECT stage_name FROM clients WHERE client_name = 'latestClient';";
+            ResultSet rs = stmt.executeQuery(sql);
+
+            if (rs.next()) {
+//                leaderspotsId = rs.getInt(1);
+                System.out.println(rs.getString("stage_name"));
+            }
+
+//            if (nextStageName == )
+            return true;
+        } catch (SQLException e) {
+            System.err.println("SQL failed.");
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
