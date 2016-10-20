@@ -199,11 +199,10 @@ public class Connect {
 //                    String latestStageName = rs.getString(1);
 //                }
             }
+            System.out.println("nextStageName : " + nextStageName);
 
             stmt.close();
             con.close();
-
-//            return shouldNextStage(nextStageName, stmt);
         } catch (SQLException e) {
             System.err.println("SQL failed.");
             e.printStackTrace();
@@ -212,14 +211,7 @@ public class Connect {
         }
     }
 
-//    public Boolean shouldNextStage(Spot serverSpot) {
-//        String nextStageName = serverSpot.getKeyword("NextStageName");
-//
-//        return true;
-//    }
-
     public Boolean shouldNextStage(String nextStageName) {
-
         return true;
     }
 
@@ -240,14 +232,20 @@ public class Connect {
                     Boolean flag = true;
 
                     while (rs.next()) {
-                        if (!rs.getString(1).equals("t")) {
-                            wait(2000); // wait 2 second if all clients haven't finished the same stage
+                        if (!rs.getBoolean(1)) {
+                            Object lock = new Object();
+                            synchronized (lock) {
+                                lock.wait(2000); // wait 2 second if all clients haven't finished the same stage
+                            }
                             flag = false;
                             break;
                         }
                     }
-                    if (flag)
+                    if (flag) {
+                        stmt.close();
+                        con.close();
                         return true;
+                    }
                 }
             } else {
                 while (true) {
@@ -255,16 +253,19 @@ public class Connect {
                     ResultSet rs = stmt.executeQuery(sql);
 
                     if (rs.next()) {
-                        if (!rs.getString(1).equals("t"))
+                        if (!rs.getBoolean(1)) {
+                            stmt.close();
+                            con.close();
                             return true;
+                        }
 
-                        wait(2000); // wait 2 second if all clients haven't finished the same stage
+                        Object lock = new Object();
+                        synchronized (lock) {
+                            lock.wait(2000); // wait 2 second if all clients haven't finished the same stage
+                        }
                     }
                 }
             }
-//
-//            System.out.println("Problem happened when sync.");
-//            return false;
         } catch (SQLException e) {
             System.err.println("SQL failed.");
             e.printStackTrace();
@@ -285,19 +286,15 @@ public class Connect {
             Connection con = DriverManager.getConnection(url, user, password);
             Statement stmt = con.createStatement();
 
-            String nextStageName = serverSpot.getKeyword("NextStageName");
+//            String nextStageName = serverSpot.getKeyword("NextStageName");
             String clientName = serverSpot.getKeyword("ClientName");
 
             if (clientName.equals("client1")) {
-                String sql = "UPDATE waiting FROM clients";
-                ResultSet rs = stmt.executeQuery(sql);
-
-                while (rs.next()) {
-                    if (!rs.getString(1).equals("t")) {
-
-                    }
-                }
+                String sql = "UPDATE clients SET waiting = false;";
+                stmt.executeQuery(sql);
             }
+            stmt.close();
+            con.close();
         } catch (SQLException e) {
             System.err.println("SQL failed.");
             e.printStackTrace();
