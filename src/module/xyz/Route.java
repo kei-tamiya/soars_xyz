@@ -132,7 +132,8 @@ public class Route {
 		Iterator<Spot> streetListIt = celMap.values().iterator();
 		while(streetListIt.hasNext()) {
 			Spot tmpSpot = streetListIt.next();
-			if(tmpSpot.getKeyword("CellType").equals("corridor"))
+			String tmpCellType = tmpSpot.getKeyword("CellType");
+			if(tmpCellType.equals("corridor") || tmpCellType.equals("ground"))
 				streetList.add(tmpSpot);
 		}
 
@@ -301,9 +302,10 @@ public class Route {
 		Iterator<Spot> streetListIt = celMap.values().iterator();
 		while(streetListIt.hasNext()) {
 			Spot tmpSpot = streetListIt.next();
-			if(tmpSpot.getKeyword("CellType").equals("corridor"))
+			String tmpCellType = tmpSpot.getKeyword("CellType");
+			if(tmpCellType.equals("corridor") || tmpCellType.equals("ground"))
 				streetList.add(tmpSpot);
-			if(tmpSpot.getKeyword("CellType").equals("LivingSpace"))
+			if(tmpCellType.equals("LivingSpace"))
 				livingSpaceList.add(tmpSpot);
 		}
 

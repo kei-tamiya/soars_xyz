@@ -257,36 +257,105 @@ public class Floor {
 			spotSet.add(bottomSpot);
 		return spotSet;
 	}
-
-//	public HashSet<Spot> getInfectionAffectAreas(Agent agent) {
-//		return getInfectionAffectAreas(agent.getSpot());
-//	}
-
-	public HashSet<Spot> getInfectionAffectAreas(Spot spot) {
+	
+	public HashSet<Spot> getInfectionAffectAreas(Spot spot, int domainX, int domainY, int domainZ) {
 		HashSet<Spot> spotSet = new HashSet<Spot>();
+		
 		int cx = spot.getIntVariable("XCoordinate");
 		int cy = spot.getIntVariable("YCoordinate");
 		int cz = spot.getIntVariable("ZCoordinate");
-		String cellType = spot.getKeyword("CellType");
-
-		// Changeable Variables(Domain)
-		int domainX = 4;
-		int domainY = 4;
-		int domainZ = 0;
-
-		for (int i=cx; i<=cx+domainX-1; i++) {
-			for (int j=cy; j <=cx+domainY-1; j++) {
-				for(int k=cz; k<=cz+domainZ-1; k++) {
+		
+		HashSet<Spot> wallSet = fetchNearAttrSpots(spot, "wall", domainX, domainY, domainZ);
+		int wallMinX = cx - domainX;
+		int wallMaxX = cx + domainX;
+		int wallMinY = cy - domainY;
+		int wallMaxY = cy + domainY;
+		
+		Iterator<Spot> wallSpotIt = wallSet.iterator();
+        while(wallSpotIt.hasNext()) {
+        	Spot wallSpot = wallSpotIt.next();
+        	int wallX = wallSpot.getIntVariable("XCoordinate");
+        	int wallY = wallSpot.getIntVariable("YCoordinate");
+        	int dx = cx - wallX;
+        	int dy = cy - wallY;
+        	
+        	if (cy == wallY) {
+        		if (dx < 0)
+            		wallMaxX = wallX;
+            	if (dx > 0)
+            		wallMinX = wallX;
+        	}
+        	
+        	if (cx == wallX) {
+        		if (dy < 0)
+            		wallMaxY = wallY;
+            	if (dy > 0)
+            		wallMinY = wallY;
+        	}
+        }
+        
+        int mx = maxX;
+        int my = maxY;
+		for (int i=cx-domainX; i<=cx+domainX; i++) {
+			if (i <= 0 || i > mx || i < wallMinX || i > wallMaxX)
+				continue;
+			for (int j=cy-domainY; j <=cy+domainY; j++) {
+				if (j <= 0 || j > my || j < wallMinY || j > wallMaxY)
+					continue;
+				for(int k=cz-domainZ; k<=cz+domainZ; k++) {
 					Spot tmpSpot = celMap.get(Integer.toString(i) + "_" + Integer.toString(j) + "_" + Integer.toString(k));
 					if (tmpSpot == spot)
 						continue;
-
-					if (tmpSpot.getKeyword("CellType").equals(cellType))
-						spotSet.add(tmpSpot);
+					
+					if (tmpSpot.getKeyword("CellType").equals("wall"))
+						continue;
+					
+					spotSet.add(tmpSpot);
 				}
 			}
 		}
-
 		return spotSet;
+	}
+	
+	public HashSet<Spot> fetchNearAttrSpots(Spot spot, String keyword, int domainX, int domainY, int domainZ) {
+		HashSet<Spot> s = new HashSet();
+		
+		int cx = spot.getIntVariable("XCoordinate");
+		int cy = spot.getIntVariable("YCoordinate");
+		int cz = spot.getIntVariable("ZCoordinate");
+		
+		int mx = maxX;
+		int my = maxY;
+				
+		for (int i=cx-domainX; i<=cx+domainX; i++) {
+			if (i <= 0 || i > mx)
+				continue;
+			for (int j=cy-domainY; j <=cy+domainY; j++) {
+				if (j <= 0 || j > my)
+					continue;
+				for(int k=cz-domainZ; k<=cz+domainZ; k++) {
+					Spot tmpSpot = celMap.get(Integer.toString(i) + "_" + Integer.toString(j) + "_" + Integer.toString(k));
+					if (tmpSpot == spot)
+						continue;
+					
+					if (tmpSpot.getKeyword("CellType").equals(keyword)) {
+						s.add(tmpSpot);
+					}
+				}
+			}
+		}
+		
+		return s;
+	} 
+	
+	public void AffectSurroundAgent(Agent agent) {
+		Spot cs = agent.getSpot();
+		HashSet<Spot> affectSpotSet = cs.getEquip("InfectionAffectSpotSet");
+		
+		Iterator<Spot> spotIt = affectSpotSet.iterator();
+		while(spotIt.hasNext()) {
+			Spot spot = spotIt.next();
+			spot.setKeyword("SpotInfection", "yes");
+		}
 	}
 }
