@@ -6,7 +6,7 @@ public class Time {
 	public static void getTicks(Spot spot) {
 		time.Time clock = spot.getTimeVariable("Clock");
 		int minute = spot.getTimeVariable("Clock").getMinutes();
-		minute = minute;
+		minute = minute/3;
 		clock.setMinutes(minute);
 	}
 }

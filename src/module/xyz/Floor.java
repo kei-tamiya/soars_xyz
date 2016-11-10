@@ -19,7 +19,7 @@ public class Floor {
 	public int minZ;
 	public int widthX;
 	public int heightY;
-	
+
 	/**
 	 * コンストラクタ
 	 * @param spot
@@ -36,7 +36,7 @@ public class Floor {
 		widthX = spot.getIntVariable("widthX");
 		heightY = spot.getIntVariable("heightY");
 	}
-	
+
 	/**
 	 * 生活スペーススポットの頂点スポット集合を返すメソッド
 	 * @return 頂点スポット集合
@@ -46,25 +46,24 @@ public class Floor {
 		Iterator<Spot> spotIt = celMap.values().iterator();
 		while(spotIt.hasNext()) {
 			Spot spot = spotIt.next();
-			Spot leaderSpot = spot.getSpotVariable("LeaderSpot");
-			if(isLifeSpaceAvailable(spot, x, y, z)) 
+			if(isLifeSpaceAvailable(spot, x, y, z))
 				spotSet.add(spot);
 		}
 		return spotSet;
 	}
-	
+
 	// 占有空間を集合変数に返すメソッド
 	public HashSet<Spot> setLifeSpacesHashSet(Agent agent, int x, int y, int z) {
 		return setLifeSpacesHashSet(agent.getSpot(), x, y, z);
 	}
-	
+
 	// 占有空間を集合変数に返すメソッド
 	public HashSet<Spot> setLifeSpacesHashSet(Spot spot, int x, int y, int z) {
 		HashSet<Spot> spotSet = new HashSet<Spot>();
 		int cx = spot.getIntVariable("XCoordinate");
 		int cy = spot.getIntVariable("YCoordinate");
 		int cz = spot.getIntVariable("ZCoordinate");
-		
+
 		for(int i=cx; i<cx+x; i++) {
 			for(int j=cy; j<cy+y; j++) {
 				for(int k=cz; k<=cz+z; k++) {
@@ -76,19 +75,19 @@ public class Floor {
 		}
 		return spotSet;
 	}
-	
+
 	// 占有空間を集合変数に返すメソッド
 	public HashSet<Spot> setLifeSpacesSet(Agent agent, int x, int y, int z) {
 		return setLifeSpacesSet(agent.getSpot(), x, y, z);
 	}
-	
+
 	// 占有空間を集合変数に返すメソッド
 	public HashSet<Spot> setLifeSpacesSet(Spot spot, int x, int y, int z) {
 		HashSet<Spot> spotSet = new HashSet<Spot>();
 		int cx = spot.getIntVariable("XCoordinate");
 		int cy = spot.getIntVariable("YCoordinate");
 		int cz = spot.getIntVariable("ZCoordinate");
-		
+
 		for(int i=cx; i<cx+x; i++) {
 			for(int j=cy; j<cy+y; j++) {
 				for(int k=cz; k<=cz+z; k++) {
@@ -100,19 +99,19 @@ public class Floor {
 		}
 		return spotSet;
 	}
-	
+
 	// 予約する占有空間を集合変数に返すメソッド
 	public HashSet<Spot> reserveLifeSpacesSet(Agent agent, int x, int y, int z) {
 		return reserveLifeSpacesSet(agent.getSpotVariable("GoalSpot"), x, y, z);
 	}
-	
+
 	// 予約する占有空間を集合変数に返すメソッド
 	public HashSet<Spot> reserveLifeSpacesSet(Spot spot, int x, int y, int z) {
 		HashSet<Spot> spotSet = new HashSet<Spot>();
 		int cx = spot.getIntVariable("XCoordinate");
 		int cy = spot.getIntVariable("YCoordinate");
 		int cz = spot.getIntVariable("ZCoordinate");
-		
+
 		for(int i=cx; i<cx+x; i++) {
 			for(int j=cy; j<cy+y; j++) {
 				for(int k=cz; k<=cz+z; k++) {
@@ -124,14 +123,14 @@ public class Floor {
 		}
 		return spotSet;
 	}
-	
+
 	// set2からset1の共通部分を消すメソッド
 	public HashSet<Spot> removeSet(HashSet<Spot> set1, HashSet<Spot> set2) {
 		Iterator<Spot> it1 = set1.iterator();
 		set2.removeAll(set1);
 		return set2;
 	}
-	
+
 	// 自分の占有空間の全ての入口（通路上）を取得するメソッド
 	public HashSet<Spot> getLifeSpaceEntranceSet(HashSet<Spot> set) {
 		HashSet<Spot> spotSet = new HashSet<Spot>();
@@ -144,8 +143,8 @@ public class Floor {
 			Spot westSpot = spot.getSpotVariable("westSpot");
 			Spot topSpot = spot.getSpotVariable("topSpot");
 			Spot bottomSpot = spot.getSpotVariable("bottomSpot");
-			
-			
+
+
 			if(northSpot!=spot && northSpot.getKeyword("CellType").equals("corridor"))
 				spotSet.add(northSpot);
 			if(eastSpot!=spot && eastSpot.getKeyword("CellType").equals("corridor"))
@@ -159,10 +158,10 @@ public class Floor {
 			if(bottomSpot!=spot && bottomSpot.getKeyword("CellType").equals("corridor"))
 				spotSet.add(bottomSpot);
 		}
-		
+
 		return spotSet;
 	}
-	
+
 	// 自分の占有空間の入口を渡してその隣の占有空間上のスポットを決定するメソッド
 	public Spot getEntranceInLifeSpace(Agent agent) {
 		Spot entranceSpot = agent.getSpotVariable("LivingSpaceEntrance");
@@ -174,7 +173,7 @@ public class Floor {
 		Spot bottomSpot = entranceSpot.getSpotVariable("bottomSpot");
 		HashSet<Spot> LifeSpaceSet = (HashSet<Spot>)agent.getEquip("LivingSpaceSet");
 		Spot tmpSpot = entranceSpot;
-		
+
 		if(northSpot!=entranceSpot && LifeSpaceSet.contains(northSpot))
 			tmpSpot = northSpot;
 		if(eastSpot!=entranceSpot && LifeSpaceSet.contains(eastSpot))
@@ -189,38 +188,51 @@ public class Floor {
 			tmpSpot = bottomSpot;
 		return tmpSpot;
 	}
-	
+
 	// 占有空間を設置可能かどうか判定するメソッド
 	public boolean isLifeSpaceAvailable(Agent agent, int x, int y, int z) {
 		return isLifeSpaceAvailable(agent.getSpot(), x, y, z);
 	}
-	
+
 	// 占有空間を設置可能かどうか判定するメソッド
 	public boolean isLifeSpaceAvailable(Spot spot, int x, int y, int z) {
 		int cx = spot.getIntVariable("XCoordinate");
 		int cy = spot.getIntVariable("YCoordinate");
 		int cz = spot.getIntVariable("ZCoordinate");
-		
+
 		if(cx+x-1 > widthX || cx < minX)
 			return false;
 		else if(cy+y-1 > heightY || cy < minY)
 			return false;
 		else if(cz+z > maxZ)
 			return false;
-		
+
+//		String keyword = spot.getKeyword("CellType");
+//		if (keyword == "LivingSpace")
+//			return false;
+
+		HashSet<String> cellTypeSet = new HashSet<String>();
+		cellTypeSet.add("Lobby");
+		cellTypeSet.add("JapaneseRoom");
+		cellTypeSet.add("Hole");
+		cellTypeSet.add("Children's Room");
+		cellTypeSet.add("MeetingRoom");
+
 		for(int i=cx; i<cx+x; i++) {
 			for(int j=cy; j<cy+y; j++) {
 				for(int k=cz; k<=cz+z; k++) {
+
 					Spot tmpSpot = celMap.get(Integer.toString(i) + "_" + Integer.toString(j) + "_" + Integer.toString(k));
-					if(!tmpSpot.getKeyword("CellType").equals("corridor"))
+					String tmpKeyword = tmpSpot.getKeyword("CellType");
+
+					if(!cellTypeSet.contains(tmpKeyword))
 						return false;
 				}
 			}
 		}
-		
 		return true;
 	}
-	
+
 	// 引数のスポットに隣接している通路スポットを返すメソッド
 	public HashSet<Spot> setNextToReceptionStreet(Spot spot) {
 		HashSet<Spot> spotSet = new HashSet<Spot>();
@@ -230,7 +242,7 @@ public class Floor {
 		Spot westSpot = spot.getSpotVariable("westSpot");
 		Spot topSpot = spot.getSpotVariable("topSpot");
 		Spot bottomSpot = spot.getSpotVariable("bottomSpot");
-		
+
 		if(northSpot!=spot && northSpot.getKeyword("CellType").equals("corridor"))
 			spotSet.add(northSpot);
 		if(eastSpot!=spot && eastSpot.getKeyword("CellType").equals("corridor"))
