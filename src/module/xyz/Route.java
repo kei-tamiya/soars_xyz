@@ -651,7 +651,7 @@ public class Route {
 		LinkedList<Spot> route = new LinkedList<Spot>();
 
 		if(distance[g_point]!=Integer.MAX_VALUE) {
-			startSpot.getSpotVariable("LeaderSpot").setIntVariable("RouteCost", distance[g_point]);
+//			startSpot.getSpotVariable("LeaderSpot").setIntVariable("RouteCost", distance[g_point]);
 			while(true) {
 				g_path[0].push(g_point);
 				g_point = min_path[g_point];
@@ -733,18 +733,23 @@ public class Route {
 //		return reachableSet(agent.getSpotVariable("StartSpot"));
 //	}
 
-	public int countRouteCost(Agent agent) {
+	public LinkedList<Integer> countRouteCost(Agent agent) {
 		int cost = 0;
 		LinkedList<Spot> route = (LinkedList<Spot>)agent.getEquip("RouteList");
 		HashSet<Spot> livingSpace = (HashSet<Spot>)agent.getEquip("LivingSpaceSet");
 		int corridorCost = 1;
 		int livingSpaceCost = 10;
 		int corridorToLivingSpaceCost = livingSpaceCost / 2;
+		int corridorCostTotal = 0;
+		int livingSpaceCostTotal = 0;
+		int corridorToLivingSpaceCostTotal = 0;
+			
 		for (int i=0; i < route.size(); i++) {
 			Spot tmpSpot = route.get(i);
 			String tmpSpotType = tmpSpot.getKeyword("CellType");
 			if (i == 0) {
-				cost++;
+				cost += corridorCost;
+				corridorCostTotal += corridorCost;
 			} else {
 				Spot lastSpot = route.get(i-1);
 				String lastSpotType = lastSpot.getKeyword("CellType");
@@ -752,39 +757,49 @@ public class Route {
 					if (lastSpotType.equals("LivingSpace")) {
 						if (livingSpace.contains(lastSpot) && !livingSpace.contains(tmpSpot)) {
 							cost = cost + livingSpaceCost;
-							int movedNum = tmpSpot.getIntVariable("MovedNum");
-							movedNum++;
-							tmpSpot.setIntVariable("MovedNum", movedNum);
+							livingSpaceCostTotal += livingSpaceCost;
+							tmpSpot.setIntVariable("MovedNum", tmpSpot.getIntVariable("MovedNum")+1);
 						} else if  (livingSpace.contains(lastSpot) && livingSpace.contains(tmpSpot)) {
-							cost++;
+							cost += corridorCost;
+							corridorCostTotal += corridorCost;
 						} else if (!livingSpace.contains(lastSpot)) {
 							cost = cost + livingSpaceCost;
-							int movedNum = tmpSpot.getIntVariable("MovedNum");
-							tmpSpot.setIntVariable("MovedNum", movedNum);
+							livingSpaceCostTotal += livingSpaceCost;
+							tmpSpot.setIntVariable("MovedNum", tmpSpot.getIntVariable("MovedNum")+1);
 						}
 					} else if (lastSpotType.equals("corridor")) {
 						if (livingSpace.contains(tmpSpot)) {
-							cost++;
+							cost += corridorCost;
+							corridorCostTotal += corridorCost;
 						} else {
 							cost = cost + corridorToLivingSpaceCost;
-							int movedNum = tmpSpot.getIntVariable("MovedNum");
-							tmpSpot.setIntVariable("MovedNum", movedNum);
+							corridorToLivingSpaceCostTotal += corridorToLivingSpaceCost;
+							tmpSpot.setIntVariable("MovedNum", tmpSpot.getIntVariable("MovedNum")+1);
 						}
 					}
 				} else if (tmpSpotType.equals("corridor")) {
 					if (lastSpotType.equals("LivingSpace")) {
 						if (livingSpace.contains(lastSpot)) {
-							cost++;
+							cost += corridorCost;
+							corridorCostTotal += corridorCost;
 						} else {
 							cost = cost + corridorToLivingSpaceCost;
+							corridorToLivingSpaceCostTotal += corridorToLivingSpaceCost;
 						}
 					} else if (lastSpotType.equals("corridor")) {
-						cost++;
+						cost += corridorCost;
+						corridorCostTotal += corridorCost;
 					}
 				}
 			}
 		}
-		return cost;
+		LinkedList<Integer> costs = new LinkedList<Integer>();
+		costs.addLast(cost);
+		costs.addLast(corridorCostTotal);
+		costs.addLast(corridorToLivingSpaceCostTotal);
+		costs.addLast(livingSpaceCostTotal);
+		System.out.println("costs: " + costs);
+		return costs;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -1483,6 +1498,11 @@ public class Route {
 			}
 		}
 		return reachaleSetByAster;    //到達可能地点を返す
+	}
+	
+	// SOARSのgetAtがバグっているので作ったメソッド
+	public int getAtFromLinkedList(LinkedList<Integer> list, int i) {
+		return list.get(i);
 	}
 
 	//位置情報の構造体
