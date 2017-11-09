@@ -126,7 +126,6 @@ public class Floor {
 
 	// set2からset1の共通部分を消すメソッド
 	public HashSet<Spot> removeSet(HashSet<Spot> set1, HashSet<Spot> set2) {
-		Iterator<Spot> it1 = set1.iterator();
 		set2.removeAll(set1);
 		return set2;
 	}
@@ -212,11 +211,7 @@ public class Floor {
 //			return false;
 
 		HashSet<String> cellTypeSet = new HashSet<String>();
-		cellTypeSet.add("Lobby");
-		cellTypeSet.add("JapaneseRoom");
-		cellTypeSet.add("Hole");
-		cellTypeSet.add("Children's Room");
-		cellTypeSet.add("MeetingRoom");
+		cellTypeSet.add("corridor");
 
 		for(int i=cx; i<cx+x; i++) {
 			for(int j=cy; j<cy+y; j++) {
@@ -318,7 +313,7 @@ public class Floor {
 	}
 	
 	public HashSet<Spot> fetchNearAttrSpots(Spot spot, String keyword, int domainX, int domainY, int domainZ) {
-		HashSet<Spot> s = new HashSet();
+		HashSet<Spot> s = new HashSet<Spot>();
 		
 		int cx = spot.getIntVariable("XCoordinate");
 		int cy = spot.getIntVariable("YCoordinate");
@@ -361,26 +356,26 @@ public class Floor {
 	
 	public void sumSurroundSpotsNoroSHLBPByAir(Agent agent) {
 		Spot cs = agent.getSpot();
-		HashSet<Spot> affectSpotSet = cs.getEquip("NoroInfectionAirAffectAreas");
+		HashSet<Spot> affectSpotSet = (HashSet<Spot>)cs.getEquip("NoroInfectionAirAffectAreas");
 		Double NoroAHL = agent.getDoubleVariable("NoroAHL");
 		
 		Iterator<Spot> spotIt = affectSpotSet.iterator();
 		while(spotIt.hasNext()) {
 			Spot spot = spotIt.next();
-			Double shlbp = cs.getEquip("NoroSHLBP");
+			Double shlbp = cs.getDoubleVariable("NoroSHLBP");
 			spot.setDoubleVariable("NoroSHLBP", shlbp+NoroAHL);
 		}
 	}
 	
 	public void sumSurroundSpotsNoroSHLBPByVomit(Agent agent, Double vomitWeight) {
 		Spot cs = agent.getSpot();
-		HashSet<Spot> affectSpotSet = cs.getEquip("NoroInfectionVomitAffectAreas");
+		HashSet<Spot> affectSpotSet = (HashSet<Spot>)cs.getEquip("NoroInfectionVomitAffectAreas");
 		Double NoroAHL = agent.getDoubleVariable("NoroAHL");
 		
 		Iterator<Spot> spotIt = affectSpotSet.iterator();
 		while(spotIt.hasNext()) {
 			Spot spot = spotIt.next();
-			Double shlbp = cs.getEquip("NoroSHLBP");
+			Double shlbp = cs.getDoubleVariable("NoroSHLBP");
 			spot.setDoubleVariable("NoroSHLBP", shlbp+NoroAHL*vomitWeight);
 		}
 	}

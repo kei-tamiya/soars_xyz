@@ -325,8 +325,9 @@ public class Route {
 					|| tmpCellType.equals("bigToilet")
 					|| tmpCellType.equals("bigToiletBowl")
 					|| tmpCellType.equals("smallToilet")
-					)
+					) {
 				streetList.add(tmpSpot);
+			}
 			if(tmpCellType.equals("LivingSpace"))
 				livingSpaceList.add(tmpSpot);
 		}
