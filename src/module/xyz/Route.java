@@ -118,6 +118,21 @@ public class Route {
 		spot.setSpotVariable("westSpot", westSpot);
 		spot.setSpotVariable("topSpot", topSpot);
 		spot.setSpotVariable("bottomSpot", bottomSpot);
+		
+		HashSet<Spot> surroundGroundSet = new HashSet<Spot>();
+		if (northSpot.getKeyword("CellType").equals("ground")) {
+			surroundGroundSet.add(northSpot);
+		}
+		if (eastSpot.getKeyword("CellType").equals("ground")) {
+			surroundGroundSet.add(northSpot);
+		}
+		if (southSpot.getKeyword("CellType").equals("ground")) {
+			surroundGroundSet.add(northSpot);
+		}
+		if (westSpot.getKeyword("CellType").equals("ground")) {
+			surroundGroundSet.add(northSpot);
+		}
+		spot.setEquip("SurroundGroundSet", surroundGroundSet);
 	}
 
 	@SuppressWarnings({ "unchecked", "unused" })
@@ -303,7 +318,14 @@ public class Route {
 		while(streetListIt.hasNext()) {
 			Spot tmpSpot = streetListIt.next();
 			String tmpCellType = tmpSpot.getKeyword("CellType");
-			if(tmpCellType.equals("corridor") || tmpCellType.equals("ground"))
+			if(tmpCellType.equals("corridor")
+					|| tmpCellType.equals("ground")
+					|| tmpCellType.equals("acceptance")
+					|| tmpCellType.equals("toiletCorridor")
+					|| tmpCellType.equals("bigToilet")
+					|| tmpCellType.equals("bigToiletBowl")
+					|| tmpCellType.equals("smallToilet")
+					)
 				streetList.add(tmpSpot);
 			if(tmpCellType.equals("LivingSpace"))
 				livingSpaceList.add(tmpSpot);

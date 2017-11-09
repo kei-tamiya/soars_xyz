@@ -358,4 +358,30 @@ public class Floor {
 			spot.setKeyword("SpotInfection", "yes");
 		}
 	}
+	
+	public void sumSurroundSpotsNoroSHLBPByAir(Agent agent) {
+		Spot cs = agent.getSpot();
+		HashSet<Spot> affectSpotSet = cs.getEquip("NoroInfectionAirAffectAreas");
+		Double NoroAHL = agent.getDoubleVariable("NoroAHL");
+		
+		Iterator<Spot> spotIt = affectSpotSet.iterator();
+		while(spotIt.hasNext()) {
+			Spot spot = spotIt.next();
+			Double shlbp = cs.getEquip("NoroSHLBP");
+			spot.setDoubleVariable("NoroSHLBP", shlbp+NoroAHL);
+		}
+	}
+	
+	public void sumSurroundSpotsNoroSHLBPByVomit(Agent agent, Double vomitWeight) {
+		Spot cs = agent.getSpot();
+		HashSet<Spot> affectSpotSet = cs.getEquip("NoroInfectionVomitAffectAreas");
+		Double NoroAHL = agent.getDoubleVariable("NoroAHL");
+		
+		Iterator<Spot> spotIt = affectSpotSet.iterator();
+		while(spotIt.hasNext()) {
+			Spot spot = spotIt.next();
+			Double shlbp = cs.getEquip("NoroSHLBP");
+			spot.setDoubleVariable("NoroSHLBP", shlbp+NoroAHL*vomitWeight);
+		}
+	}
 }
